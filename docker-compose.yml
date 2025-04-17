@@ -1,0 +1,34 @@
+services:
+
+  laravel:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pea_laravel
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`api-pea.dev-fullstack.net`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
+      - "traefik.http.routers.phpmyadmin.tls.certresolver=myresolver"
+    networks:
+      - antibes
+
+  nuxt:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pea_nuxt
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.phpmyadmin.rule=Host(`pea.dev-fullstack.net`)"
+    - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
+    - "traefik.http.routers.phpmyadmin.tls.certresolver=myresolver"
+    networks:
+      - antibes
+    depends_on:
+      - laravel
+
+networks:
+  antibes:
+    external: true
+    name: antibes
