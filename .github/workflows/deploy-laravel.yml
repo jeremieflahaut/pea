@@ -45,6 +45,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 5906
           script: |
             cd /home/debian/projects/pea
             git pull origin main
