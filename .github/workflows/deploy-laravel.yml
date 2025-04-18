@@ -36,8 +36,7 @@ jobs:
             --file backend/Dockerfile \
             --tag $IMAGE_NAME:latest \
             --tag $IMAGE_NAME:${VERSION_TAG} \
-            --tag $IMAGE_NAME:${SHA_TAG} \
-            .
+            --tag $IMAGE_NAME:${SHA_TAG} ./backend
           docker push $IMAGE_NAME --all-tags
 
       - name: Deploy to VPS

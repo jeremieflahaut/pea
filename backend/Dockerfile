@@ -3,7 +3,7 @@ FROM jflahaut/nginx-php:latest
 # Copier les sources
 WORKDIR /var/www/html
 
-COPY ./app/ ./
+COPY app/ .
 
 # Permissions
 RUN sudo chown -R debian:debian /var/www/html \
