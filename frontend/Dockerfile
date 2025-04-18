@@ -3,6 +3,10 @@ FROM node:20-alpine as builder
 WORKDIR /app
 COPY app/ .
 
+# 👉 build argument pour injecter la variable
+ARG NUXT_PUBLIC_SANCTUM_BASE_URL
+ENV NUXT_PUBLIC_SANCTUM_BASE_URL=$NUXT_PUBLIC_SANCTUM_BASE_URL
+
 RUN npm install && npm run build
 
 # Étape pour servir l'app (Nitro standalone ou node server)
