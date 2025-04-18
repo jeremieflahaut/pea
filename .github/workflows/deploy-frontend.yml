@@ -45,5 +45,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /home/debian/projects/pea
+            git pull origin main
+            ls -alsh
             docker compose -f docker-compose.prod.yml pull nuxt
             docker compose -f docker-compose.prod.yml up -d nuxt
