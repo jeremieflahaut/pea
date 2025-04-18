@@ -5,6 +5,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: pea_laravel
+    volumes:
+      - ./env/laravel.env:/var/www/html/.env:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.phpmyadmin.rule=Host(`api-pea.dev-fullstack.net`)"
