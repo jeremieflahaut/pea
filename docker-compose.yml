@@ -19,6 +19,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NUXT_PUBLIC_SANCTUM_BASE_URL: https://api-pea.dev-fullstack.net
     container_name: pea_nuxt
     labels:
     - "traefik.enable=true"
