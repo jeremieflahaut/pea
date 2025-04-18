@@ -35,7 +35,7 @@ const isFormValid = computed(() => {
 </script>
 
 <template>
-  <div>Test 2</div>
+  <div>Test 22</div>
   <div class="flex items-center justify-center min-h-screen">
     <UCard>
       <template #header>Login</template>
