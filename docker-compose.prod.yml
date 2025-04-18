@@ -1,0 +1,35 @@
+services:
+  # --- Laravel ---
+  laravel:
+    image: ghcr.io/jeremieflahaut/pea/laravel:latest
+    container_name: pea_laravel
+    volumes:
+      - ./env/laravel.env:/var/www/html/.env:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pea-laravel.rule=Host(`api-pea.dev-fullstack.net`)"
+      - "traefik.http.routers.pea-laravel.entrypoints=websecure"
+      - "traefik.http.routers.pea-laravel.tls.certresolver=myresolver"
+      - "traefik.http.services.pea-laravel.loadbalancer.server.port=80"
+    networks:
+      - antibes
+
+  # --- Nuxt ---
+  nuxt:
+    image: ghcr.io/jeremieflahaut/pea/nuxt:latest
+    container_name: pea_nuxt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pea-nuxt.rule=Host(`pea.dev-fullstack.net`)"
+      - "traefik.http.routers.pea-nuxt.entrypoints=websecure"
+      - "traefik.http.routers.pea-nuxt.tls.certresolver=myresolver"
+      - "traefik.http.services.pea-nuxt.loadbalancer.server.port=3000"
+    networks:
+      - antibes
+    depends_on:
+      - laravel
+
+networks:
+  antibes:
+    external: true
+    name: antibes
