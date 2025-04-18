@@ -1,0 +1,82 @@
+name: Deploy on push to main
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  FRONT_IMAGE: ghcr.io/jeremieflahaut/pea/nuxt
+  BACK_IMAGE: ghcr.io/jeremieflahaut/pea/laravel
+  SHA_TAG: sha-${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+
+      - name: Login to GHCR
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- FRONTEND (Nuxt) ---
+      - name: Build & push Nuxt image
+        if: steps.changes.outputs.frontend == 'true'
+        run: |
+          docker build -t $FRONT_IMAGE:latest -t $FRONT_IMAGE:${SHA_TAG} -f frontend/Dockerfile ./frontend
+          docker push $FRONT_IMAGE --all-tags
+
+      - name: Deploy Nuxt to VPS
+        if: steps.changes.outputs.frontend == 'true'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            cd /home/debian/projects/pea
+            docker compose -f docker-compose.prod.yml pull nuxt
+            docker compose -f docker-compose.prod.yml up -d nuxt
+
+      # --- BACKEND (Laravel) ---
+      - name: Build & push Laravel image
+        if: steps.changes.outputs.backend == 'true'
+        run: |
+          docker build -t $BACK_IMAGE:latest -t $BACK_IMAGE:${SHA_TAG} -f backend/Dockerfile ./backend
+          docker push $BACK_IMAGE --all-tags
+
+      - name: Deploy Laravel to VPS
+        if: steps.changes.outputs.backend == 'true'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            cd /home/debian/projects/pea
+            docker compose -f docker-compose.prod.yml pull laravel
+            docker compose -f docker-compose.prod.yml up -d laravel
+            docker compose -f docker-compose.prod.yml exec laravel php artisan migrate --force
