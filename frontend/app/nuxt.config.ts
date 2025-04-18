@@ -31,7 +31,7 @@ export default defineNuxtConfig({
         globalMiddleware: {
           enabled: true,
         },
-        baseUrl: 'http://localhost:8000'
+        baseUrl: 'https://api-pea.dev-fullstack.net'
       }
 
     }
