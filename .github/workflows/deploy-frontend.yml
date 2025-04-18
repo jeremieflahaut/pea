@@ -34,7 +34,7 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME:latest \
                        -t $IMAGE_NAME:${VERSION_TAG} \
-                       -t $IMAGE_NAME:${SHA_TAG} ./nuxt
+                       -t $IMAGE_NAME:${SHA_TAG} ./frontend
           docker push $IMAGE_NAME --all-tags
 
       - name: Deploy to VPS
