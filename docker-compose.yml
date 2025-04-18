@@ -9,9 +9,9 @@ services:
       - ./env/laravel.env:/var/www/html/.env:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.phpmyadmin.rule=Host(`api-pea.dev-fullstack.net`)"
-      - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
-      - "traefik.http.routers.phpmyadmin.tls.certresolver=myresolver"
+      - "traefik.http.routers.pea-laravel.rule=Host(`api-pea.dev-fullstack.net`)"
+      - "traefik.http.routers.pea-laravel.entrypoints=websecure"
+      - "traefik.http.routers.pea-laravel.tls.certresolver=myresolver"
     networks:
       - antibes
 
@@ -22,9 +22,9 @@ services:
     container_name: pea_nuxt
     labels:
     - "traefik.enable=true"
-    - "traefik.http.routers.phpmyadmin.rule=Host(`pea.dev-fullstack.net`)"
-    - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
-    - "traefik.http.routers.phpmyadmin.tls.certresolver=myresolver"
+    - "traefik.http.routers.pea-nuxt.rule=Host(`pea.dev-fullstack.net`)"
+    - "traefik.http.routers.pea-nuxt.entrypoints=websecure"
+    - "traefik.http.routers.pea-nuxt.tls.certresolver=myresolver"
     networks:
       - antibes
     depends_on:
