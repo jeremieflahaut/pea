@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => env('APP_ENV') === 'production' ? ['https://pea.dev-fullstack.net'] : ['http://localhost:3000'],
+    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '')),
 
     'allowed_origins_patterns' => [],
 
