@@ -19,7 +19,7 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (!Auth::attempt($credentials, true)) {
+        if (!Auth::attempt($credentials, false)) {
             throw ValidationException::withMessages([
                 'email' => ['Les identifiants sont invalides.'],
             ]);
