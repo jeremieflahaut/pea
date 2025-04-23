@@ -36,11 +36,4 @@ export default defineNuxtConfig({
 
     }
   },
-  nitro: {
-    routeRules: {
-      // Évite les appels Laravel côté SSR qui génèrent des cookies anonymes
-      '/api/**': { ssr: false },
-      '/sanctum/**': { ssr: false },
-    },
-  },
 });
