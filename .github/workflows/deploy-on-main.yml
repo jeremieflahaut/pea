@@ -81,4 +81,7 @@ jobs:
             docker compose -f docker-compose.prod.yml pull laravel
             docker compose -f docker-compose.prod.yml up -d laravel
             docker compose -f docker-compose.prod.yml exec laravel php artisan migrate --force
+            docker compose -f docker-compose.prod.yml exec laravel php artisan config:clear
+            docker compose -f docker-compose.prod.yml exec laravel php artisan optimize:clear
+            docker compose -f docker-compose.prod.yml exec laravel php artisan config:cache
             docker image prune -f
