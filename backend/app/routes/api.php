@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web'])->post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::middleware(['web'])->post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-Route::middleware(['web', 'auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::apiResource('positions', PositionController::class)->only('index');
     Route::apiResource('allocations', AllocationController::class);
@@ -23,5 +23,4 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     })->name('user.show');
-
 });
