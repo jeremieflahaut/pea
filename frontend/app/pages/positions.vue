@@ -22,7 +22,7 @@ const columns: TableColumn<Position>[] = [
     accessorKey: 'quantity',
     header: 'Qté',
     cell: ({ row }) =>
-      formatCurrency(row.original.average_price)
+      formatQuantity(row.original.quantity)
   },
   {
     accessorKey: 'average_price',
@@ -34,7 +34,7 @@ const columns: TableColumn<Position>[] = [
     accessorKey: 'current_price',
     header: 'Cours',
     cell: ({ row }) =>
-      formatQuantity(row.original.current_price)
+      formatCurrency(row.original.current_price)
   },
   {
     id: 'gain_loss',
