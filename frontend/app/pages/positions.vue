@@ -20,7 +20,9 @@ const columns: TableColumn<Position>[] = [
   },
   {
     accessorKey: 'quantity',
-    header: 'Qté'
+    header: 'Qté',
+    cell: ({ row }) =>
+      formatCurrency(row.original.average_price)
   },
   {
     accessorKey: 'average_price',
@@ -32,7 +34,7 @@ const columns: TableColumn<Position>[] = [
     accessorKey: 'current_price',
     header: 'Cours',
     cell: ({ row }) =>
-      formatCurrency(row.original.current_price)
+      formatQuantity(row.original.current_price)
   },
   {
     id: 'gain_loss',
@@ -52,23 +54,31 @@ const columns: TableColumn<Position>[] = [
 ]
 
 const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(val)
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  }).format(val)
+
+const formatQuantity = (val: number) =>
+  new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(val)
 
 
 </script>
 
 <template>
-    
-    <UCard>
-        <template #header>Positions en portefeuille</template>
 
-        <div v-if="isLoading" class="text-center p-6">
-            Chargement...
-        </div>
+  <UCard>
+    <template #header>Positions en portefeuille</template>
 
-        <UTable v-else :data="positions ?? []" :columns="columns"></UTable>
-    </UCard>
+    <div v-if="isLoading" class="text-center p-6">
+      Chargement...
+    </div>
+
+    <UTable v-else :data="positions ?? []" :columns="columns"></UTable>
+  </UCard>
 </template>

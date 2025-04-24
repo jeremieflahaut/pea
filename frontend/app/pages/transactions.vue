@@ -5,12 +5,21 @@ const { data: transactions, status, refresh } = await useAsyncData('transactions
 const isLoading = computed(() => status.value === 'pending')
 
 const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val)
+    new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3,
+    }).format(val)
+
+const formatQuantity = (val: number) =>
+    new Intl.NumberFormat('fr-FR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(val)
 
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('fr-FR')
-
-
 
 const open = ref(false)
 const isSubmitting = ref(false)
@@ -92,7 +101,7 @@ const onSubmit = async () => {
                     <UInput type="number" v-model.number="newTransaction.price" class="w-full" />
                 </UFormField>
 
-               
+
 
                 <div class="mt-4">
                     <UButton type="submit" block :loading="isSubmitting" class="w-full">Créer</UButton>
@@ -118,7 +127,7 @@ const onSubmit = async () => {
 
                 <div class="space-y-1">
                     <div><strong>ISIN :</strong> {{ tx.isin }}</div>
-                    <div><strong>Quantité :</strong> {{ tx.quantity }}</div>
+                    <div><strong>Quantité :</strong> {{ formatQuantity(tx.quantity) }}</div>
                     <div><strong>Prix unitaire :</strong> {{ formatCurrency(tx.price) }}</div>
                     <div><strong>Total :</strong> {{ formatCurrency(tx.price * tx.quantity) }}</div>
                 </div>

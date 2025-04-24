@@ -8,7 +8,12 @@ const { data: allocations, status, refresh } = await useAsyncData('allocations',
 const isLoading = computed(() => status.value === 'pending')
 
 const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val)
+    new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3,
+    }).format(val)
 
 const columns: TableColumn<Allocation>[] = [
     {
@@ -98,25 +103,25 @@ const onSubmit = async () => {
 
 <template>
 
-    <UModal v-model:open="open" title="Nouvelle allocation"  description="Remplissez les champs pour ajouter une nouvelle allocation cible">
-        <UButton label="Ajouter une allocation" color="neutral" variant="subtle" class="mb-5"/>
+    <UModal v-model:open="open" title="Nouvelle allocation" description="Remplissez les champs pour ajouter une nouvelle allocation cible">
+        <UButton label="Ajouter une allocation" color="neutral" variant="subtle" class="mb-5" />
 
         <template #body>
             <UForm :schema="allocationSchema" :state="newAllocation" @submit="onSubmit" class="space-y-4">
                 <UFormField label="Nom" required name="name">
-                    <UInput v-model="newAllocation.name" class="w-full"/>
+                    <UInput v-model="newAllocation.name" class="w-full" />
                 </UFormField>
 
                 <UFormField label="ISIN" required name="isin">
-                    <UInput v-model="newAllocation.isin" class="w-full"/>
+                    <UInput v-model="newAllocation.isin" class="w-full" />
                 </UFormField>
 
                 <UFormField label="Type" required name="type">
-                    <USelect v-model="newAllocation.type" :items="types" class="w-full"/>
+                    <USelect v-model="newAllocation.type" :items="types" class="w-full" />
                 </UFormField>
 
                 <UFormField label="Objectif (%)" required name="target_percent">
-                    <UInput v-model.number="newAllocation.target_percent" type="number" class="w-full"/>
+                    <UInput v-model.number="newAllocation.target_percent" type="number" class="w-full" />
                 </UFormField>
 
                 <div class="mt-4">
