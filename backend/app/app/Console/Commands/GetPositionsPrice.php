@@ -2,8 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Allocation;
+use App\Models\Position;
 use App\Services\FinancialScraperService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class GetPositionsPrice extends Command
 {
@@ -26,9 +29,20 @@ class GetPositionsPrice extends Command
      */
     public function handle()
     {
-        $price = app(FinancialScraperService::class)->getPrice('PCEU.PA');
+        Allocation::whereNotNull('ticker')
+            ->get()->each(function (Allocation $allocation) {
+                $price = app(FinancialScraperService::class)->getPrice($allocation->ticker);
 
-        dd($price);
+                $position = Position::where('isin', $allocation->isin)->first();
+
+                if (! $position) {
+                    Log::error("Aucune position trouvée pour ISIN : {$allocation->isin}");
+                    return;
+                }
+
+                $position->update(['current_price' => $price]);
+
+            });
 
 
     }
