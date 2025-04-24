@@ -2,18 +2,17 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Position;
-use App\Models\Transaction;
+use App\Services\FinancialScraperService;
 use Illuminate\Console\Command;
 
-class Test extends Command
+class GetPositionsPrice extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:test';
+    protected $signature = 'app:get-positions-price';
 
     /**
      * The console command description.
@@ -27,6 +26,10 @@ class Test extends Command
      */
     public function handle()
     {
+        $price = app(FinancialScraperService::class)->getPrice('PCEU.PA');
+
+        dd($price);
+
 
     }
 }
