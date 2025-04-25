@@ -39,8 +39,8 @@ jobs:
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          registry: ghcr.io
+          username: jeremieflahaut
           password: ${{ secrets.GHCR_PAT }}
 
       # --- FRONTEND (Nuxt) ---
