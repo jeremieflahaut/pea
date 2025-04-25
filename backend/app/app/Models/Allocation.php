@@ -11,6 +11,7 @@ class Allocation extends Model
         'user_id',
         'name',
         'isin',
+        'ticker',
         'type',
         'target_percent'
     ];

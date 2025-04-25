@@ -21,3 +21,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+/app/Console/Commands/*[tT]est*.php

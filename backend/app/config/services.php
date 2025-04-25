@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'scraper' => [
+        'url' => env('SCRAPER_URL', 'http://localhost:5001')
+    ]
 
 ];
