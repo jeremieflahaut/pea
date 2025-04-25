@@ -6,6 +6,7 @@ use App\Models\Allocation;
 use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class AllocationController extends ApiController
@@ -18,7 +19,7 @@ class AllocationController extends ApiController
         $transactions = Transaction::where('user_id', $user->id)->get();
 
         $positions = $transactions->groupBy('isin')->map(function ($txs, $isin) {
-            $quantity = $txs->sum(fn ($t) => $t->type === 'buy' ? $t->quantity : -$t->quantity);
+            $quantity = $txs->sum(fn($t) => $t->type === 'buy' ? $t->quantity : -$t->quantity);
 
             $current_price = $txs->last()?->price ?? 0;
 
@@ -66,10 +67,11 @@ class AllocationController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'isin' => ['required', 'string', 'unique:App\Models\Allocation,isin,user_id,' . $request->user()->id],
-            'name' => ['required', 'string'],
-            'type' => ['required','in:ETF,Action'],
-            'target_percent' => ['required','numeric','min:0','max:100'],
+            'isin' => ['required', 'string', Rule::unique('allocations', 'isin')->where('user_id', $request->user()->id),],
+            'name' => ['required', 'string', 'unique:App\Models\Allocation,name'], //TODO unique by user
+            'ticker' => ['required', 'string', 'unique:App\Models\Allocation,ticker'], //TODO unique by user
+            'type' => ['required', 'in:ETF,Action'],
+            'target_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $allocation = $request->user()->allocations()->create($data);
@@ -82,9 +84,16 @@ class AllocationController extends ApiController
         abort_if($allocationTarget->user_id !== $request->user()->id, ResponseAlias::HTTP_FORBIDDEN);
 
         $data = $request->validate([
-            'name' => ['sometimes','required','string'],
-            'type' => ['sometimes','required|in:ETF,Action'],
-            'target_percent' => ['sometimes','required','numeric','min:0|max:100'],
+            'name' => [
+                'sometimes',
+                'required',
+                'string',
+                Rule::unique('allocations')
+                    ->where('user_id', $request->user()->id)
+                    ->ignore($allocationTarget->id),
+            ],
+            'type' => ['sometimes', 'required|in:ETF,Action'],
+            'target_percent' => ['sometimes', 'required', 'numeric', 'min:0|max:100'],
         ]);
 
         $allocationTarget->update($data);
