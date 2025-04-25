@@ -27,7 +27,7 @@ class GetPositionsPrice extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         Allocation::whereNotNull('ticker')
             ->get()->each(function (Allocation $allocation) {
@@ -44,6 +44,6 @@ class GetPositionsPrice extends Command
 
             });
 
-
+        Log::info("Mise a jour des prix terminée");
     }
 }

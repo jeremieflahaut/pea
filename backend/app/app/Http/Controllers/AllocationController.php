@@ -68,6 +68,7 @@ class AllocationController extends ApiController
         $data = $request->validate([
             'isin' => ['required', 'string', 'unique:App\Models\Allocation,isin,user_id,' . $request->user()->id],
             'name' => ['required', 'string'],
+            'ticker' => ['required', 'string'],
             'type' => ['required','in:ETF,Action'],
             'target_percent' => ['required','numeric','min:0','max:100'],
         ]);
