@@ -9,6 +9,7 @@ env:
   REGISTRY: ghcr.io
   FRONT_IMAGE: ghcr.io/jeremieflahaut/pea/nuxt
   BACK_IMAGE: ghcr.io/jeremieflahaut/pea/laravel
+  SCRAPER_IMAGE: ghcr.io/jeremieflahaut/pea/scraper
   SHA_TAG: sha-${{ github.sha }}
 
 jobs:
@@ -31,6 +32,8 @@ jobs:
               - 'frontend/**'
             backend:
               - 'backend/**'
+            scraper:
+              - 'scraper/**'
 
       - name: Login to GHCR
         if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true'
@@ -84,4 +87,25 @@ jobs:
             docker compose -f docker-compose.prod.yml exec laravel php artisan config:clear
             docker compose -f docker-compose.prod.yml exec laravel php artisan optimize:clear
             docker compose -f docker-compose.prod.yml exec laravel php artisan config:cache
+            docker image prune -f
+
+      # --- SCRAPPER (python) ---
+      - name: Build & push Scraper image
+        if: steps.changes.outputs.scraper == 'true'
+        run: |
+          docker build -t $SCRAPER_IMAGE:latest -t $SCRAPER_IMAGE:${SHA_TAG} -f scraper/Dockerfile ./scraper
+          docker push $SCRAPER_IMAGE --all-tags
+
+      - name: Deploy Scraper to VPS
+        if: steps.changes.outputs.scraper == 'true'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 5906
+          script: |
+            cd /home/debian/projects/pea
+            docker compose -f docker-compose.prod.yml pull scraper
+            docker compose -f docker-compose.prod.yml up -d scraper
             docker image prune -f

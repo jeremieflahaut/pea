@@ -29,6 +29,12 @@ services:
     depends_on:
       - laravel
 
+  scraper:
+    image: ghcr.io/jeremieflahaut/pea/scraper:latest
+    container_name: pea_scraper
+    networks:
+      - antibes
+
 networks:
   antibes:
     external: true

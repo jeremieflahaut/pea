@@ -24,3 +24,4 @@ def get_price():
 if __name__ == "__main__":
     print("✅ Scraper Yahoo API running on http://localhost:5001")
     app.run(host="0.0.0.0", port=5001)
+

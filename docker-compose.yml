@@ -23,14 +23,22 @@ services:
         NUXT_PUBLIC_SANCTUM_BASE_URL: https://api-pea.dev-fullstack.net
     container_name: pea_nuxt
     labels:
-    - "traefik.enable=true"
-    - "traefik.http.routers.pea-nuxt.rule=Host(`pea.dev-fullstack.net`)"
-    - "traefik.http.routers.pea-nuxt.entrypoints=websecure"
-    - "traefik.http.routers.pea-nuxt.tls.certresolver=myresolver"
+      - "traefik.enable=true"
+      - "traefik.http.routers.pea-nuxt.rule=Host(`pea.dev-fullstack.net`)"
+      - "traefik.http.routers.pea-nuxt.entrypoints=websecure"
+      - "traefik.http.routers.pea-nuxt.tls.certresolver=myresolver"
     networks:
       - antibes
     depends_on:
       - laravel
+
+  scraper:
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile
+    container_name: pea_scraper
+    networks:
+      - antibes
 
 networks:
   antibes:
