@@ -63,6 +63,7 @@ const types = ref(['ETF', 'Action'])
 
 const allocationSchema = z.object({
     name: z.string().min(2, 'Nom requis'),
+    ticker: z.string().min(2, 'Ticker requis'),
     isin: z.string().length(12, 'ISIN invalide'),
     type: z.enum(['ETF', 'Action']),
     target_percent: z
@@ -73,6 +74,7 @@ const allocationSchema = z.object({
 
 const newAllocation = reactive({
     name: '',
+    ticker: '',
     isin: '',
     type: 'ETF',
     target_percent: 0
@@ -90,6 +92,7 @@ const onSubmit = async () => {
 
         Object.assign(newAllocation, {
             name: '',
+            ticker:'',
             isin: '',
             type: 'ETF',
             target_percent: 0
@@ -114,6 +117,10 @@ const onSubmit = async () => {
 
                 <UFormField label="ISIN" required name="isin">
                     <UInput v-model="newAllocation.isin" class="w-full" />
+                </UFormField>
+
+                <UFormField label="Ticker" required name="ticker">
+                    <UInput v-model="newAllocation.ticker" class="w-full" />
                 </UFormField>
 
                 <UFormField label="Type" required name="type">

@@ -1,6 +1,7 @@
 export type Allocation = {
     label: string
     isin: string
+    ticker: string
     type: 'ETF' | 'Action' | 'Autre'
     target_percent: number
     current_amount: number
