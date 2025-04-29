@@ -93,7 +93,7 @@ class AllocationController extends ApiController
                     ->ignore($allocationTarget->id),
             ],
             'type' => ['sometimes', 'required|in:ETF,Action'],
-            'target_percent' => ['sometimes', 'required', 'numeric', 'min:0|max:100'],
+            'target_percent' => ['sometimes', 'required', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $allocationTarget->update($data);
