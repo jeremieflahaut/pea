@@ -1,13 +1,11 @@
 <?php
 
-use App\Actions\StoreTransactionAction;
+use App\Actions\Transactions\StoreTransactionAction;
 use App\Models\Allocation;
 use App\Models\Position;
 use App\Models\Transaction;
 use App\Models\User;
-
 use Illuminate\Support\Carbon;
-
 use function Pest\Laravel\assertDatabaseHas;
 
 beforeEach(function () {

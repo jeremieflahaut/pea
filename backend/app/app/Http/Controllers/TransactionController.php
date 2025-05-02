@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\StoreTransactionAction;
+use App\Actions\Transactions\StoreTransactionAction;
 use App\Http\Requests\TransactionRequest;
 use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;

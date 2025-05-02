@@ -78,3 +78,24 @@ it('updates a transaction when the user is the owner', function () {
         'date' => '2025-05-01',
     ]);
 });
+
+it('returns 403 if the user is not the owner of the transaction', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    Sanctum::actingAs($user);
+
+    $transaction = Transaction::factory()->create([
+        'user_id' => $other->id,
+    ]);
+
+    $response = $this->putJson("/api/transactions/{$transaction->id}", [
+        'isin' => 'FR0000123456',
+        'quantity' => 99,
+        'price' => 1,
+        'type' => 'sell',
+        'date' => '2025-01-01',
+    ]);
+
+    $response->assertForbidden();
+});
