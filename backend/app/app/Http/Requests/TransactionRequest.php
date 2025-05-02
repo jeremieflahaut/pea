@@ -12,7 +12,13 @@ class TransactionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $transaction = $this->route('transaction');
+
+        if (! $transaction) {
+            return true;
+        }
+
+        return $transaction->user_id === $this->user()->id;
     }
 
     /**
