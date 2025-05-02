@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Positions\GetPositionsAction;
 use App\Models\Position;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,24 +12,12 @@ class PositionController extends ApiController
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, GetPositionsAction $action): JsonResponse
     {
-        $positions = Position::where('user_id', $request->user()->id)
-            ->get()
-            ->map(function ($position) {
-                return [
-                    'id' => $position->id,
-                    'name' => $position->name,
-                    'isin' => $position->isin,
-                    'quantity' => $position->quantity,
-                    'average_price' => $position->average_price,
-                    'current_price' => $position->current_price,
-                ];
-            });
-
-        return $this->successResponse($positions);
+        return $this->successResponse($action->handle($request->user()));
     }
 
+    // @codeCoverageIgnoreStart
     /**
      * Store a newly created resource in storage.
      */
@@ -36,7 +25,9 @@ class PositionController extends ApiController
     {
         //
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     /**
      * Display the specified resource.
      */
@@ -44,7 +35,9 @@ class PositionController extends ApiController
     {
         //
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     /**
      * Update the specified resource in storage.
      */
@@ -52,7 +45,9 @@ class PositionController extends ApiController
     {
         //
     }
+    // @codeCoverageIgnoreEnd
 
+    // @codeCoverageIgnoreStart
     /**
      * Remove the specified resource from storage.
      */
@@ -60,4 +55,5 @@ class PositionController extends ApiController
     {
         //
     }
+    // @codeCoverageIgnoreEnd
 }

@@ -2,18 +2,12 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { Allocation } from '@/types'
 import * as z from 'zod'
+import { UButton } from '#components'
+import { formatCurrency } from '@/utils/formatters'
 
 const { data: allocations, status, refresh } = await useAsyncData('allocations', () => useAllocations())
 
 const isLoading = computed(() => status.value === 'pending')
-
-const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 3,
-        maximumFractionDigits: 3,
-    }).format(val)
 
 const columns: TableColumn<Allocation>[] = [
     {
@@ -26,21 +20,81 @@ const columns: TableColumn<Allocation>[] = [
     },
     {
         accessorKey: 'type',
-        header: 'Type',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Type',
+                icon: isSorted
+                    ? isSorted === 'asc'
+                        ? 'i-lucide-arrow-up-narrow-wide'
+                        : 'i-lucide-arrow-down-wide-narrow'
+                    : 'i-lucide-arrow-up-down',
+                class: '-mx-2.5',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+            })
+        },
     },
     {
         accessorKey: 'target_percent',
-        header: 'Répartition (%)',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Répartition (%)',
+                icon: isSorted
+                    ? isSorted === 'asc'
+                        ? 'i-lucide-arrow-up-narrow-wide'
+                        : 'i-lucide-arrow-down-wide-narrow'
+                    : 'i-lucide-arrow-up-down',
+                class: '-mx-2.5',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+            })
+        },
         cell: ({ row }) => `${row.original.target_percent}%`,
     },
     {
         accessorKey: 'current_amount',
-        header: 'Montant actuel',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Montant actuel',
+                icon: isSorted
+                    ? isSorted === 'asc'
+                        ? 'i-lucide-arrow-up-narrow-wide'
+                        : 'i-lucide-arrow-down-wide-narrow'
+                    : 'i-lucide-arrow-up-down',
+                class: '-mx-2.5',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+            })
+        },
         cell: ({ row }) => formatCurrency(row.original.current_amount),
     },
     {
         accessorKey: 'current_percent',
-        header: 'Répartition Actuelle (%)',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Répartition Actuelle (%)',
+                icon: isSorted
+                    ? isSorted === 'asc'
+                        ? 'i-lucide-arrow-up-narrow-wide'
+                        : 'i-lucide-arrow-down-wide-narrow'
+                    : 'i-lucide-arrow-up-down',
+                class: '-mx-2.5',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+            })
+        },
         cell: ({ row }) => {
             const color = row.original.current_percent > row.original.target_percent ? 'text-red-500 font-semibold' : 'text-gray-300'
             return h('span', { class: color }, `${row.original.current_percent.toFixed(2)}%`)
@@ -48,7 +102,22 @@ const columns: TableColumn<Allocation>[] = [
     },
     {
         accessorKey: 'amount_to_add',
-        header: 'Montant à rajouter',
+        header: ({ column }) => {
+            const isSorted = column.getIsSorted()
+
+            return h(UButton, {
+                color: 'neutral',
+                variant: 'ghost',
+                label: 'Montant à rajouter',
+                icon: isSorted
+                    ? isSorted === 'asc'
+                        ? 'i-lucide-arrow-up-narrow-wide'
+                        : 'i-lucide-arrow-down-wide-narrow'
+                    : 'i-lucide-arrow-up-down',
+                class: '-mx-2.5',
+                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+            })
+        },
         cell: ({ row }) =>
             h('span', {
                 class: row.original.amount_to_add > 0 ? 'text-green-500' : 'text-gray-500'
@@ -63,6 +132,7 @@ const types = ref(['ETF', 'Action'])
 
 const allocationSchema = z.object({
     name: z.string().min(2, 'Nom requis'),
+    ticker: z.string().min(2, 'Ticker requis'),
     isin: z.string().length(12, 'ISIN invalide'),
     type: z.enum(['ETF', 'Action']),
     target_percent: z
@@ -73,10 +143,15 @@ const allocationSchema = z.object({
 
 const newAllocation = reactive({
     name: '',
+    ticker: '',
     isin: '',
     type: 'ETF',
     target_percent: 0
 })
+
+const totalTargetPercent = computed(() =>
+    (allocations.value ?? []).reduce((sum, item) => sum + item.target_percent, 0)
+)
 
 const onSubmit = async () => {
     isSubmitting.value = true
@@ -90,6 +165,7 @@ const onSubmit = async () => {
 
         Object.assign(newAllocation, {
             name: '',
+            ticker: '',
             isin: '',
             type: 'ETF',
             target_percent: 0
@@ -116,6 +192,10 @@ const onSubmit = async () => {
                     <UInput v-model="newAllocation.isin" class="w-full" />
                 </UFormField>
 
+                <UFormField label="Ticker" required name="ticker">
+                    <UInput v-model="newAllocation.ticker" class="w-full" />
+                </UFormField>
+
                 <UFormField label="Type" required name="type">
                     <USelect v-model="newAllocation.type" :items="types" class="w-full" />
                 </UFormField>
@@ -131,9 +211,20 @@ const onSubmit = async () => {
         </template>
     </UModal>
 
-
     <UCard>
-        <template #header>Répartition cible vs actuelle</template>
+        <template #header>
+            <div class="flex justify-between items-center">
+                <span class="font-semibold">Répartition cible vs actuelle</span>
+                <span class="text-sm text-gray-400">
+                    Total alloué :
+                    <span :class="totalTargetPercent > 100 ? 'text-red-500 font-semibold' : 'text-white/70'">
+                        {{ totalTargetPercent.toFixed(2) }}%
+                    </span>
+                    &nbsp;/
+                    <span class="text-white/30">100%</span>
+                </span>
+            </div>
+        </template>
 
         <div v-if="isLoading" class="p-6 text-center">Chargement...</div>
 
