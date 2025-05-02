@@ -40,22 +40,7 @@ const columns: TableColumn<Position>[] = [
   },
   {
     id: 'gain_loss',
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted()
-
-      return h(UButton, {
-        color: 'neutral',
-        variant: 'ghost',
-        label: '+/-',
-        icon: isSorted
-          ? isSorted === 'asc'
-            ? 'i-lucide-arrow-up-narrow-wide'
-            : 'i-lucide-arrow-down-wide-narrow'
-          : 'i-lucide-arrow-up-down',
-        class: '-mx-2.5',
-        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-      })
-    },
+    header: '+/-',
     cell: ({ row }) => {
       const p = row.original
       const gain = (p.current_price - p.average_price) * p.quantity
@@ -66,12 +51,12 @@ const columns: TableColumn<Position>[] = [
         },
         formatCurrency(gain)
       )
-    }
+    },
   }
-]
+];
 
 
-
+const sorting = ref([]);
 
 </script>
 
@@ -84,6 +69,6 @@ const columns: TableColumn<Position>[] = [
       Chargement...
     </div>
 
-    <UTable v-else :data="positions ?? []" :columns="columns"></UTable>
+    <UTable v-else :data="positions ?? []" :columns="columns" v-model:sorting="sorting"></UTable>
   </UCard>
 </template>

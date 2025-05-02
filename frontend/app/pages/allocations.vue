@@ -97,7 +97,7 @@ const columns: TableColumn<Allocation>[] = [
         },
         cell: ({ row }) => {
             const color = row.original.current_percent > row.original.target_percent ? 'text-red-500 font-semibold' : 'text-gray-300'
-            return h('span', { class: color }, `${row.original.current_percent.toFixed(2)}%`)
+            return h('span', { class: color }, `${row.original.current_percent}%`)
         }
     },
     {
@@ -150,7 +150,7 @@ const newAllocation = reactive({
 })
 
 const totalTargetPercent = computed(() =>
-    (allocations.value ?? []).reduce((sum, item) => sum + item.target_percent, 0)
+    (allocations.value ?? []).reduce((sum, item) => sum + Number(item.target_percent), 0)
 )
 
 const onSubmit = async () => {
@@ -218,7 +218,7 @@ const onSubmit = async () => {
                 <span class="text-sm text-gray-400">
                     Total alloué :
                     <span :class="totalTargetPercent > 100 ? 'text-red-500 font-semibold' : 'text-white/70'">
-                        {{ totalTargetPercent.toFixed(2) }}%
+                        {{ totalTargetPercent }}%
                     </span>
                     &nbsp;/
                     <span class="text-white/30">100%</span>
