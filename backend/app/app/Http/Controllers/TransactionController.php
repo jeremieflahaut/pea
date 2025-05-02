@@ -29,6 +29,7 @@ class TransactionController extends ApiController
         return $this->successResponse($transaction->toArray(), ResponseAlias::HTTP_CREATED);
     }
 
+    // @codeCoverageIgnoreStart
     /**
      * Display the specified resource.
      */
@@ -36,6 +37,7 @@ class TransactionController extends ApiController
     {
         //
     }
+    // @codeCoverageIgnoreEnd
 
     /**
      * Update the specified resource in storage.
@@ -49,6 +51,7 @@ class TransactionController extends ApiController
         return $this->successResponse($transaction->toArray());
     }
 
+    // @codeCoverageIgnoreStart
     /**
      * Remove the specified resource from storage.
      */
@@ -56,4 +59,5 @@ class TransactionController extends ApiController
     {
         //
     }
+    // @codeCoverageIgnoreEnd
 }
