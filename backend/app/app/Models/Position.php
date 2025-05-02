@@ -44,7 +44,7 @@ class Position extends Model
 
                 return $totalQuantity > 0
                     ? round($totalInvested / $totalQuantity, 4)
-                    : 0;
+                    : 0.0;
             }
         );
     }
