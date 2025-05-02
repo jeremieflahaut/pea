@@ -1,22 +1,9 @@
 <script setup lang="ts">
 import { z } from 'zod'
+import { formatCurrency, formatQuantity } from '@/utils/formatters'
 
 const { data: transactions, status, refresh } = await useAsyncData('transactions', () => useTransactions())
 const isLoading = computed(() => status.value === 'pending')
-
-const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 3,
-        maximumFractionDigits: 3,
-    }).format(val)
-
-const formatQuantity = (val: number) =>
-    new Intl.NumberFormat('fr-FR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(val)
 
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('fr-FR')
@@ -76,7 +63,7 @@ const onSubmit = async () => {
 
 
     <UModal v-model:open="open" title="Nouvelle allocation" description="Remplissez les champs pour ajouter une nouvelle allocation cible">
-        <UButton label="Ajouter une allocation" color="neutral" variant="subtle" class="mb-5" />
+        <UButton label="Ajouter une transaction" color="neutral" variant="subtle" class="mb-5" />
 
         <template #body>
             <UForm :schema="transactionSchema" :state="newTransaction" @submit="onSubmit" class="space-y-4">

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { Position } from '@/types'
+import { UButton } from '#components'
+import { formatCurrency, formatQuantity } from '@/utils/formatters'
 
 /* const positions = ref<Position[]>([])
 const isLoading = ref(true) */
@@ -38,7 +40,22 @@ const columns: TableColumn<Position>[] = [
   },
   {
     id: 'gain_loss',
-    header: '+/-',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: '+/-',
+        icon: isSorted
+          ? isSorted === 'asc'
+            ? 'i-lucide-arrow-up-narrow-wide'
+            : 'i-lucide-arrow-down-wide-narrow'
+          : 'i-lucide-arrow-up-down',
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    },
     cell: ({ row }) => {
       const p = row.original
       const gain = (p.current_price - p.average_price) * p.quantity
@@ -53,19 +70,7 @@ const columns: TableColumn<Position>[] = [
   }
 ]
 
-const formatCurrency = (val: number) =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
-  }).format(val)
 
-const formatQuantity = (val: number) =>
-  new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(val)
 
 
 </script>
