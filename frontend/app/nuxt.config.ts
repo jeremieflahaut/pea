@@ -25,7 +25,7 @@ export default defineNuxtConfig({
           user: '/api/user',
         },
         redirect: {
-          onLogin: '/positions',
+          onLogin: '/',
           onLogout: '/login',
         },
         globalMiddleware: {
