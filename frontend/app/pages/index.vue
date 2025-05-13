@@ -30,7 +30,17 @@ const isPerformancePercentNegative = computed(() => performancePercent.value < 0
       </div>
     </UCard>
 
-    <!-- Card 2: Plus-values -->
+    <!-- Card 2: Valeur courante -->
+    <UCard>
+      <template #header>
+        <span class="text-sm font-medium text-gray-500">Valeur courante</span>
+      </template>
+      <div class="text-2xl font-semibold">
+        {{ formatEuro(summary?.current_value ?? 0) }}
+      </div>
+    </UCard>
+
+    <!-- Card 3: Plus-values -->
     <UCard>
       <template #header>
         <span class="text-sm font-medium text-gray-500">Plus-values</span>
@@ -43,7 +53,7 @@ const isPerformancePercentNegative = computed(() => performancePercent.value < 0
       </div>
     </UCard>
 
-    <!-- Card 3: Rendement -->
+    <!-- Card 4: Rendement -->
     <UCard>
       <template #header>
         <span class="text-sm font-medium text-gray-500">Rendement</span>
