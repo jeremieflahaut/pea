@@ -5,6 +5,8 @@ import * as z from 'zod'
 import { UButton } from '#components'
 import { formatCurrency } from '@/utils/formatters'
 
+definePageMeta({ layout: 'wide' })
+
 const { data: allocations, status, refresh } = await useAsyncData('allocations', () => useAllocations())
 
 const isLoading = computed(() => status.value === 'pending')
