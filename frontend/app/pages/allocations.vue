@@ -5,8 +5,6 @@ import * as z from 'zod'
 import { UButton } from '#components'
 import { formatCurrency } from '@/utils/formatters'
 
-definePageMeta({ layout: 'wide' })
-
 const { data: allocations, status, refresh } = await useAsyncData('allocations', () => useAllocations())
 
 const isLoading = computed(() => status.value === 'pending')
@@ -47,7 +45,7 @@ const columns: TableColumn<Allocation>[] = [
             return h(UButton, {
                 color: 'neutral',
                 variant: 'ghost',
-                label: 'Répartition (%)',
+                label: 'Cible %',
                 icon: isSorted
                     ? isSorted === 'asc'
                         ? 'i-lucide-arrow-up-narrow-wide'
@@ -67,7 +65,7 @@ const columns: TableColumn<Allocation>[] = [
             return h(UButton, {
                 color: 'neutral',
                 variant: 'ghost',
-                label: 'Montant actuel',
+                label: 'Actuel',
                 icon: isSorted
                     ? isSorted === 'asc'
                         ? 'i-lucide-arrow-up-narrow-wide'
@@ -87,7 +85,7 @@ const columns: TableColumn<Allocation>[] = [
             return h(UButton, {
                 color: 'neutral',
                 variant: 'ghost',
-                label: 'Répartition Actuelle (%)',
+                label: 'Actuelle %',
                 icon: isSorted
                     ? isSorted === 'asc'
                         ? 'i-lucide-arrow-up-narrow-wide'
@@ -110,7 +108,7 @@ const columns: TableColumn<Allocation>[] = [
             return h(UButton, {
                 color: 'neutral',
                 variant: 'ghost',
-                label: 'Montant à rajouter',
+                label: 'À ajouter',
                 icon: isSorted
                     ? isSorted === 'asc'
                         ? 'i-lucide-arrow-up-narrow-wide'
