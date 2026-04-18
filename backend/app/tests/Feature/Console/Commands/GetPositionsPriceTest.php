@@ -44,7 +44,7 @@ it('logs an error when no position is found for an allocation', function () {
     ]);
 
     $fakeService = Mockery::mock(FinancialScraperService::class);
-    $fakeService->shouldReceive('getPrice')->with('MISSING')->andReturn(0);
+    $fakeService->shouldReceive('getPrice')->with('MISSING')->andReturn(42.0);
     app()->instance(FinancialScraperService::class, $fakeService);
 
     Artisan::call('app:get-positions-price');
@@ -52,4 +52,29 @@ it('logs an error when no position is found for an allocation', function () {
     Log::shouldHaveReceived('error')
         ->once()
         ->with("Aucune position trouvée pour ISIN : {$allocation->isin}");
+});
+
+it('does not overwrite current_price when scraper returns 0', function () {
+    Log::spy();
+
+    $allocation = Allocation::factory()->create([
+        'isin' => 'FR0000000002',
+        'ticker' => 'BROKEN',
+    ]);
+    $position = Position::factory()->create([
+        'isin' => $allocation->isin,
+        'user_id' => $allocation->user_id,
+        'current_price' => 99.50,
+    ]);
+
+    $fakeService = Mockery::mock(FinancialScraperService::class);
+    $fakeService->shouldReceive('getPrice')->with('BROKEN')->andReturn(0);
+    App::instance(FinancialScraperService::class, $fakeService);
+
+    Artisan::call('app:get-positions-price');
+
+    expect($position->refresh()->current_price)->toBe(99.50);
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->with("Prix indisponible pour BROKEN (ISIN {$allocation->isin}), position non mise à jour");
 });

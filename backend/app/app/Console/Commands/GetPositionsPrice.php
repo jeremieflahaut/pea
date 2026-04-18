@@ -33,6 +33,11 @@ class GetPositionsPrice extends Command
             ->get()->each(function (Allocation $allocation) {
                 $price = app(FinancialScraperService::class)->getPrice($allocation->ticker);
 
+                if ($price <= 0) {
+                    Log::warning("Prix indisponible pour {$allocation->ticker} (ISIN {$allocation->isin}), position non mise à jour");
+                    return;
+                }
+
                 $position = Position::where('isin', $allocation->isin)->first();
 
                 if (! $position) {

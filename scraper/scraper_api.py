@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
-from bs4 import BeautifulSoup
-import requests
+import yfinance as yf
+import logging
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 @app.route("/price", methods=["GET"])
 def get_price():
@@ -10,18 +12,15 @@ def get_price():
     if not ticker:
         return jsonify({"error": "Missing ticker"}), 400
 
-    url = f"https://finance.yahoo.com/quote/{ticker}"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+    try:
+        price = yf.Ticker(ticker).fast_info["last_price"]
+        if price is None or price != price:
+            raise ValueError("no last_price")
+        return jsonify({"ticker": ticker, "price": float(price)})
+    except Exception as e:
+        app.logger.warning("price fetch failed for %s: %s", ticker, e)
+        return jsonify({"error": "Price not found", "ticker": ticker}), 404
 
-    price_span = soup.find("span", {"data-testid": "qsp-price"})
-    if price_span:
-        return jsonify({"ticker": ticker, "price": float(price_span.text.replace(',', ''))})
-
-    return jsonify({"error": "Price not found"}), 404
 
 if __name__ == "__main__":
-    print("✅ Scraper Yahoo API running on http://localhost:5001")
     app.run(host="0.0.0.0", port=5001)
-
