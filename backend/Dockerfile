@@ -1,4 +1,4 @@
-FROM jflahaut/nginx-php:latest
+FROM jflahaut/nginx-php:v1.1.0
 
 # Copier les sources
 WORKDIR /var/www/html
