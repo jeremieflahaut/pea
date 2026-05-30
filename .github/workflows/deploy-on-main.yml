@@ -8,7 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   FRONT_IMAGE: ghcr.io/jeremieflahaut/pea/nuxt
-  BACK_IMAGE: ghcr.io/jeremieflahaut/pea/laravel
+  PHP_IMAGE: ghcr.io/jeremieflahaut/pea/php
+  NGINX_IMAGE: ghcr.io/jeremieflahaut/pea/nginx
   SCRAPER_IMAGE: ghcr.io/jeremieflahaut/pea/scraper
   SHA_TAG: sha-${{ github.sha }}
 
@@ -60,18 +61,25 @@ jobs:
           port: 5906
           script: |
             cd /home/debian/projects/pea
-            docker compose -f docker-compose.prod.yml pull nuxt
-            docker compose -f docker-compose.prod.yml up -d nuxt
+            git fetch origin main && git reset --hard origin/main
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull nuxt
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans nuxt
             docker image prune -f
 
-      # --- BACKEND (Laravel) ---
-      - name: Build & push Laravel image
+      # --- BACKEND (php-fpm + nginx) ---
+      - name: Build & push PHP-FPM image
         if: steps.changes.outputs.backend == 'true'
         run: |
-          docker build -t $BACK_IMAGE:latest -t $BACK_IMAGE:${SHA_TAG} -f backend/Dockerfile ./backend
-          docker push $BACK_IMAGE --all-tags
+          docker build --target prod -t $PHP_IMAGE:latest -t $PHP_IMAGE:${SHA_TAG} -f backend/Dockerfile ./backend
+          docker push $PHP_IMAGE --all-tags
 
-      - name: Deploy Laravel to VPS
+      - name: Build & push nginx image
+        if: steps.changes.outputs.backend == 'true'
+        run: |
+          docker build -t $NGINX_IMAGE:latest -t $NGINX_IMAGE:${SHA_TAG} -f backend/docker/nginx/Dockerfile ./backend
+          docker push $NGINX_IMAGE --all-tags
+
+      - name: Deploy backend to VPS
         if: steps.changes.outputs.backend == 'true'
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -81,12 +89,13 @@ jobs:
           port: 5906
           script: |
             cd /home/debian/projects/pea
-            docker compose -f docker-compose.prod.yml pull laravel
-            docker compose -f docker-compose.prod.yml up -d laravel
-            docker compose -f docker-compose.prod.yml exec laravel php artisan migrate --force
-            docker compose -f docker-compose.prod.yml exec laravel php artisan config:clear
-            docker compose -f docker-compose.prod.yml exec laravel php artisan optimize:clear
-            docker compose -f docker-compose.prod.yml exec laravel php artisan config:cache
+            git fetch origin main && git reset --hard origin/main
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull php nginx
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans php nginx scheduler
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php artisan migrate --force
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php artisan optimize:clear
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php artisan package:discover --ansi
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php artisan config:cache
             docker image prune -f
 
       # --- SCRAPPER (python) ---
@@ -106,6 +115,7 @@ jobs:
           port: 5906
           script: |
             cd /home/debian/projects/pea
-            docker compose -f docker-compose.prod.yml pull scraper
-            docker compose -f docker-compose.prod.yml up -d scraper
+            git fetch origin main && git reset --hard origin/main
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull scraper
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans scraper
             docker image prune -f
