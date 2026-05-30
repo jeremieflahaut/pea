@@ -1,41 +1,21 @@
+# Overlay PROD (explicite) : docker compose -f docker-compose.yml -f docker-compose.prod.yml ...
+# Ne contient QUE les surcharges prod (routage Traefik). Tout le reste — images, noms,
+# réseau, volumes, scheduler — vient du base. Images tirées de GHCR (le `build` du base
+# n'est pas déclenché tant qu'on fait `pull` puis `up -d` sans `--build`).
 services:
-  # --- Laravel ---
-  laravel:
-    image: ghcr.io/jeremieflahaut/pea/laravel:latest
-    container_name: pea_laravel
-    volumes:
-      - ./env/laravel.env:/var/www/html/.env:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pea-laravel.rule=Host(`api-pea.dev-fullstack.net`)"
-      - "traefik.http.routers.pea-laravel.entrypoints=websecure"
-      - "traefik.http.routers.pea-laravel.tls.certresolver=myresolver"
-      - "traefik.http.services.pea-laravel.loadbalancer.server.port=80"
-    networks:
-      - antibes
 
-  # --- Nuxt ---
+  nginx:
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.pea-api.rule: "Host(`api-pea.dev-fullstack.net`)"
+      traefik.http.routers.pea-api.entrypoints: "websecure"
+      traefik.http.routers.pea-api.tls.certresolver: "myresolver"
+      traefik.http.services.pea-api.loadbalancer.server.port: "80"
+
   nuxt:
-    image: ghcr.io/jeremieflahaut/pea/nuxt:latest
-    container_name: pea_nuxt
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pea-nuxt.rule=Host(`pea.dev-fullstack.net`)"
-      - "traefik.http.routers.pea-nuxt.entrypoints=websecure"
-      - "traefik.http.routers.pea-nuxt.tls.certresolver=myresolver"
-      - "traefik.http.services.pea-nuxt.loadbalancer.server.port=3000"
-    networks:
-      - antibes
-    depends_on:
-      - laravel
-
-  scraper:
-    image: ghcr.io/jeremieflahaut/pea/scraper:latest
-    container_name: pea_scraper
-    networks:
-      - antibes
-
-networks:
-  antibes:
-    external: true
-    name: antibes
+      traefik.enable: "true"
+      traefik.http.routers.pea-front.rule: "Host(`pea.dev-fullstack.net`)"
+      traefik.http.routers.pea-front.entrypoints: "websecure"
+      traefik.http.routers.pea-front.tls.certresolver: "myresolver"
+      traefik.http.services.pea-front.loadbalancer.server.port: "3000"
