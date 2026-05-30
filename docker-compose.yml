@@ -1,44 +1,81 @@
+# Base commune dev + prod. NE se lance pas seul : on l'overlay explicitement
+#   dev  : docker compose -f docker-compose.yml -f docker-compose.dev.yml ...
+#   prod : docker compose -f docker-compose.yml -f docker-compose.prod.yml ...
+# (cf. Makefile). Le nom de projet Compose vient du dossier (pea) ; les container_name
+# sont écrits en dur, égaux au dossier — pas de COMPOSE_PROJECT_NAME à gérer.
 services:
 
-  laravel:
+  php:
+    image: ghcr.io/jeremieflahaut/pea/php:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: pea_laravel
+      target: prod
+    container_name: pea_php
     volumes:
       - ./env/laravel.env:/var/www/html/.env:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pea-laravel.rule=Host(`api-pea.dev-fullstack.net`)"
-      - "traefik.http.routers.pea-laravel.entrypoints=websecure"
-      - "traefik.http.routers.pea-laravel.tls.certresolver=myresolver"
     networks:
       - antibes
+    restart: unless-stopped
+
+  nginx:
+    image: ghcr.io/jeremieflahaut/pea/nginx:latest
+    build:
+      context: ./backend
+      dockerfile: docker/nginx/Dockerfile
+    container_name: pea_nginx
+    depends_on:
+      - php
+    labels:
+      traefik.enable: "false"
+    networks:
+      - antibes
+    restart: unless-stopped
+
+  # Scheduler Laravel : même image que php, commande différente (plus de cron).
+  scheduler:
+    image: ghcr.io/jeremieflahaut/pea/php:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: prod
+    container_name: pea_scheduler
+    command: php artisan schedule:work
+    volumes:
+      - ./env/laravel.env:/var/www/html/.env:ro
+    depends_on:
+      - php
+    labels:
+      traefik.enable: "false"
+    networks:
+      - antibes
+    restart: unless-stopped
 
   nuxt:
+    image: ghcr.io/jeremieflahaut/pea/nuxt:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         NUXT_PUBLIC_SANCTUM_BASE_URL: https://api-pea.dev-fullstack.net
     container_name: pea_nuxt
+    depends_on:
+      - nginx
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pea-nuxt.rule=Host(`pea.dev-fullstack.net`)"
-      - "traefik.http.routers.pea-nuxt.entrypoints=websecure"
-      - "traefik.http.routers.pea-nuxt.tls.certresolver=myresolver"
+      traefik.enable: "false"
     networks:
       - antibes
-    depends_on:
-      - laravel
+    restart: unless-stopped
 
   scraper:
+    image: ghcr.io/jeremieflahaut/pea/scraper:latest
     build:
       context: ./scraper
       dockerfile: Dockerfile
     container_name: pea_scraper
     networks:
       - antibes
+    restart: unless-stopped
 
 networks:
   antibes:

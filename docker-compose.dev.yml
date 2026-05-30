@@ -1,0 +1,35 @@
+# Overlay DEV (explicite) : docker compose -f docker-compose.yml -f docker-compose.dev.yml ...
+# - php/scheduler : image dev (toolchain) + bind-mount de TOUTE l'app (code+vendor depuis l'hôte)
+# - ports exposés en local, Xdebug activable
+# Le mount `./env/laravel.env` vient du base (target .env plus spécifique => prioritaire sur app/.env).
+# Premier run sur un clone : `make init` (composer install + sqlite + migrate dans le volume).
+services:
+
+  php:
+    build:
+      target: dev
+    environment:
+      XDEBUG_MODE: "develop,debug,coverage"
+    volumes:
+      - ./backend/app:/var/www/html
+
+  nginx:
+    ports:
+      - "8080:80"
+
+  scheduler:
+    build:
+      target: dev
+    volumes:
+      - ./backend/app:/var/www/html
+
+  nuxt:
+    build:
+      args:
+        NUXT_PUBLIC_SANCTUM_BASE_URL: "http://localhost:8080"
+    ports:
+      - "3000:3000"
+
+  scraper:
+    ports:
+      - "5001:5001"
