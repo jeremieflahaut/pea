@@ -44,6 +44,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Le VPS n'est pas (plus) un checkout git : on lui livre les fichiers compose par scp.
+      # Les images viennent de GHCR ; le VPS n'a besoin que de ces 2 fichiers + son env.
+      - name: Sync compose files to VPS
+        if: steps.changes.outputs.frontend == 'true' || steps.changes.outputs.backend == 'true' || steps.changes.outputs.scraper == 'true'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 5906
+          source: "docker-compose.yml,docker-compose.prod.yml"
+          target: "/home/debian/projects/pea"
+
       # --- FRONTEND (Nuxt) ---
       - name: Build & push Nuxt image
         if: steps.changes.outputs.frontend == 'true'
@@ -59,9 +72,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 5906
+          script_stop: true
           script: |
             cd /home/debian/projects/pea
-            git fetch origin main && git reset --hard origin/main
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull nuxt
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans nuxt
             docker image prune -f
@@ -87,9 +100,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 5906
+          script_stop: true
           script: |
             cd /home/debian/projects/pea
-            git fetch origin main && git reset --hard origin/main
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull php nginx
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans php nginx scheduler
             docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php artisan migrate --force
@@ -113,9 +126,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 5906
+          script_stop: true
           script: |
             cd /home/debian/projects/pea
-            git fetch origin main && git reset --hard origin/main
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull scraper
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans scraper
             docker image prune -f
