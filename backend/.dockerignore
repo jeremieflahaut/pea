@@ -1,0 +1,19 @@
+# Le contexte de build est ./backend (cf. docker-compose) ; les sources sont copiées
+# via `COPY app/ .`. Les motifs sont donc relatifs à ./backend, d'où le préfixe `app/`.
+# (Ce fichier DOIT être à la racine du contexte — un .dockerignore dans app/ est ignoré.)
+
+# Secrets / env — montés à l'exécution, jamais embarqués dans l'image
+app/.env
+app/.env.*
+
+# Dépendances réinstallées par `composer install` pendant le build
+app/vendor/
+app/node_modules/
+
+# Base SQLite de dev (la prod tourne sur MySQL) — ne pas embarquer
+app/database/*.sqlite*
+
+# Caches compilés (manifestes de packages/services générés en dev, donc env-spécifiques) :
+# régénérés au déploiement via `artisan package:discover`. Les embarquer fait planter
+# l'image prod (un provider dev comme Pail y est référencé alors qu'il n'est pas installé).
+app/bootstrap/cache/*.php
