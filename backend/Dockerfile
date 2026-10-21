@@ -10,6 +10,7 @@ FROM php:8.2-fpm-alpine AS base
 # des extensions (icu, libzip…) sans bricoler les -dev alpine à la main.
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions pdo_mysql pdo_sqlite bcmath intl zip opcache pcntl
+COPY docker/php/upload-progress.ini /usr/local/etc/php/conf.d/zz-upload-progress.ini
 WORKDIR /var/www/html
 
 # ============ deps composer (prod, sans dev) — sous PHP 8.2 + extensions ============
