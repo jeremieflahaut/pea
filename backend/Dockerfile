@@ -5,7 +5,7 @@
 FROM composer:2 AS composer
 
 # ============ base runtime : php-fpm officiel + extensions ============
-FROM php:8.2-fpm-alpine AS base
+FROM php:8.2.35-fpm-alpine AS base
 # install-php-extensions : helper posé sur la base OFFICIELLE, gère les deps système
 # des extensions (icu, libzip…) sans bricoler les -dev alpine à la main.
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
