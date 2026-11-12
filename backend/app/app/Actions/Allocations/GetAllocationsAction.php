@@ -21,6 +21,7 @@ class GetAllocationsAction
                 'quantity' => $position->quantity,
                 'current_price' => $position->current_price,
                 'current_amount' => round($position->quantity * $position->current_price, 2),
+                'price_updated_at' => $position->price_updated_at?->toIso8601String(),
             ]);
 
         $allocations = $targets->map(function ($target) use ($positions) {
@@ -28,6 +29,7 @@ class GetAllocationsAction
                 'quantity' => 0,
                 'current_price' => 0,
                 'current_amount' => 0,
+                'price_updated_at' => null,
             ];
 
             return [
@@ -37,6 +39,7 @@ class GetAllocationsAction
                 'type' => $target->type,
                 'target_percent' => $target->target_percent,
                 'current_amount' => $position['current_amount'],
+                'price_updated_at' => $position['price_updated_at'],
             ];
         });
 

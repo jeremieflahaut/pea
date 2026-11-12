@@ -28,11 +28,14 @@ it('updates current_price of positions based on allocations using the scraper se
 
     App::instance(FinancialScraperService::class, $fakeService);
 
+    $this->travelTo('2026-11-12 12:00:00');
+
     Artisan::call('app:get-positions-price');
 
     $position->refresh();
 
     expect($position->current_price)->toBe(123.45);
+    expect($position->price_updated_at->toDateTimeString())->toBe('2026-11-12 12:00:00');
 });
 
 it('logs an error when no position is found for an allocation', function () {
@@ -65,6 +68,7 @@ it('does not overwrite current_price when scraper returns 0', function () {
         'isin' => $allocation->isin,
         'user_id' => $allocation->user_id,
         'current_price' => 99.50,
+        'price_updated_at' => '2026-07-09 18:00:00',
     ]);
 
     $fakeService = Mockery::mock(FinancialScraperService::class);
@@ -74,6 +78,8 @@ it('does not overwrite current_price when scraper returns 0', function () {
     Artisan::call('app:get-positions-price');
 
     expect($position->refresh()->current_price)->toBe(99.50);
+    // Le cours n'a pas été rafraîchi : sa date ne doit pas bouger
+    expect($position->price_updated_at->toDateTimeString())->toBe('2026-07-09 18:00:00');
     Log::shouldHaveReceived('warning')
         ->once()
         ->with("Prix indisponible pour BROKEN (ISIN {$allocation->isin}), position non mise à jour");

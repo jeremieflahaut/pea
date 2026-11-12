@@ -8,4 +8,5 @@ export type Allocation = {
     current_amount: number
     current_percent: number
     amount_to_add: number
+    price_updated_at: string | null
   }

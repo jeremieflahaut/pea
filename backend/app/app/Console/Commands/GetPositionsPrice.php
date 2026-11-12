@@ -45,7 +45,10 @@ class GetPositionsPrice extends Command
                     return;
                 }
 
-                $position->update(['current_price' => $price]);
+                $position->update([
+                    'current_price' => $price,
+                    'price_updated_at' => now(),
+                ]);
 
             });
 

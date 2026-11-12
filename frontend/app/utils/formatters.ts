@@ -11,3 +11,10 @@ export const formatCurrency = (val: number): string =>
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(val)
+
+  export const formatDateTime = (iso: string): string =>
+    new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      timeZone: 'Europe/Paris',
+    }).format(new Date(iso))

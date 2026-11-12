@@ -3,11 +3,23 @@ import type { TableColumn } from '@nuxt/ui'
 import type { Allocation } from '@/types'
 import * as z from 'zod'
 import { UButton } from '#components'
-import { formatCurrency } from '@/utils/formatters'
+import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
 const { data: allocations, status, refresh } = await useAsyncData('allocations', () => useAllocations())
 
 const isLoading = computed(() => status.value === 'pending')
+
+// Les cours sont rafraîchis toutes les 6 h : au-delà de 48 h, le scraper ne tourne plus
+// (ou le ticker ne répond plus) et les montants « À ajouter » ne sont plus fiables.
+const STALE_PRICE_MS = 48 * 60 * 60 * 1000
+
+const isPriceStale = (allocation: Allocation): boolean =>
+    !allocation.price_updated_at
+    || Date.now() - new Date(allocation.price_updated_at).getTime() > STALE_PRICE_MS
+
+const stalePriceLabels = computed(() =>
+    (allocations.value ?? []).filter(isPriceStale).map((allocation) => allocation.label)
+)
 
 const columns: TableColumn<Allocation>[] = [
     {
@@ -76,6 +88,19 @@ const columns: TableColumn<Allocation>[] = [
             })
         },
         cell: ({ row }) => formatCurrency(row.original.current_amount),
+    },
+    {
+        accessorKey: 'price_updated_at',
+        header: 'Cours au',
+        cell: ({ row }) => {
+            const updatedAt = row.original.price_updated_at
+            const stale = isPriceStale(row.original)
+
+            return h('span', {
+                class: stale ? 'text-red-500 font-semibold' : 'text-gray-400',
+                title: stale ? 'Cours de plus de 48 h : les montants à ajouter ne sont pas fiables' : undefined
+            }, `${stale ? '⚠ ' : ''}${updatedAt ? formatDateTime(updatedAt) : 'jamais'}`)
+        }
     },
     {
         accessorKey: 'current_percent',
@@ -299,6 +324,16 @@ const onEditSubmit = async () => {
                 </span>
             </div>
         </template>
+
+        <UAlert
+            v-if="!isLoading && stalePriceLabels.length"
+            color="error"
+            variant="subtle"
+            icon="i-lucide-triangle-alert"
+            title="Cours périmés"
+            :description="`Cours de plus de 48 h pour : ${stalePriceLabels.join(', ')}. Les montants « À ajouter » ne sont pas fiables.`"
+            class="mb-4"
+        />
 
         <div v-if="isLoading" class="p-6 text-center">Chargement...</div>
 

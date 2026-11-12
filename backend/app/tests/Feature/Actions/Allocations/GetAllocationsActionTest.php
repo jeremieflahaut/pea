@@ -117,3 +117,30 @@ it('ignores positions of other users holding the same isin', function () {
 
     expect($allocations[0]['current_amount'])->toBe(0);
 });
+
+it('exposes the date of the last price update, or null without position', function () {
+    $user = User::factory()->create();
+
+    Allocation::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000001',
+        'target_percent' => 60,
+    ]);
+
+    Allocation::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000002',
+        'target_percent' => 40,
+    ]);
+
+    Position::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000001',
+        'price_updated_at' => '2026-11-12 12:00:00',
+    ]);
+
+    $allocations = app(GetAllocationsAction::class)->handle($user);
+
+    expect($allocations[0]['price_updated_at'])->toBe('2026-11-12T12:00:00+00:00');
+    expect($allocations[1]['price_updated_at'])->toBeNull();
+});

@@ -17,10 +17,18 @@ class Position extends Model
         'isin',
         'name',
         'quantity',
-        'current_price'
+        'current_price',
+        'price_updated_at',
     ];
 
     protected $appends = ['average_price'];
+
+    protected function casts(): array
+    {
+        return [
+            'price_updated_at' => 'datetime',
+        ];
+    }
 
     public function transactions(): HasMany
     {
