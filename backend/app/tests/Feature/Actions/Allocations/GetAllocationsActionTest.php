@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Models\Allocation;
+use App\Models\Position;
 use App\Models\Transaction;
 use App\Actions\Allocations\GetAllocationsAction;
 
@@ -25,23 +26,21 @@ it('computes current allocations with amount, percent and gap', function () {
         'target_percent' => 40,
     ]);
 
-    // Transactions simulant une position réelle
+    // Positions détenues, valorisées au cours actuel
     // ETF A : 5 x 10 = 50
-    Transaction::factory()->create([
+    Position::factory()->create([
         'user_id' => $user->id,
         'isin' => 'FR0000000001',
-        'type' => 'buy',
         'quantity' => 5,
-        'price' => 10,
+        'current_price' => 10,
     ]);
 
     // ETF B : 2 x 15 = 30
-    Transaction::factory()->create([
+    Position::factory()->create([
         'user_id' => $user->id,
         'isin' => 'FR0000000002',
-        'type' => 'buy',
         'quantity' => 2,
-        'price' => 15,
+        'current_price' => 15,
     ]);
 
     $allocations = app(GetAllocationsAction::class)->handle($user);
@@ -68,3 +67,53 @@ it('computes current allocations with amount, percent and gap', function () {
     expect($allocations[1]['amount_to_add'])->toBe(2.0);
 });
 
+it('values allocations at the position current price, not the last transaction price', function () {
+    $user = User::factory()->create();
+
+    Allocation::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000001',
+        'target_percent' => 100,
+    ]);
+
+    // Dernière transaction : une vente à 10 — ne doit pas servir de cours
+    Transaction::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000001',
+        'type' => 'sell',
+        'quantity' => 1,
+        'price' => 10,
+    ]);
+
+    Position::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000001',
+        'quantity' => 4,
+        'current_price' => 12.5,
+    ]);
+
+    $allocations = app(GetAllocationsAction::class)->handle($user);
+
+    expect($allocations[0]['current_amount'])->toBe(50.0);
+});
+
+it('ignores positions of other users holding the same isin', function () {
+    $user = User::factory()->create();
+
+    Allocation::factory()->create([
+        'user_id' => $user->id,
+        'isin' => 'FR0000000001',
+        'target_percent' => 100,
+    ]);
+
+    Position::factory()->create([
+        'user_id' => User::factory(),
+        'isin' => 'FR0000000001',
+        'quantity' => 10,
+        'current_price' => 10,
+    ]);
+
+    $allocations = app(GetAllocationsAction::class)->handle($user);
+
+    expect($allocations[0]['current_amount'])->toBe(0);
+});

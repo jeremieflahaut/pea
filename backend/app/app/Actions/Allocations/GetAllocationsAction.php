@@ -3,7 +3,7 @@
 namespace App\Actions\Allocations;
 
 use App\Models\Allocation;
-use App\Models\Transaction;
+use App\Models\Position;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -12,20 +12,16 @@ class GetAllocationsAction
     public function handle(User $user): Collection
     {
         $targets = Allocation::where('user_id', $user->id)->get();
-        $transactions = Transaction::where('user_id', $user->id)->get();
-
-        $positions = $transactions->groupBy('isin')->map(function ($txs, $isin) {
-            $quantity = $txs->sum(fn($t) => $t->type === 'buy' ? $t->quantity : -$t->quantity);
-
-            $current_price = $txs->last()?->price ?? 0;
-
-            return [
-                'isin' => $isin,
-                'quantity' => $quantity,
-                'current_price' => $current_price,
-                'current_amount' => round($quantity * $current_price, 2),
-            ];
-        });
+        // Valorisation au cours actuel (mis à jour par app:get-positions-price),
+        // pas au prix de la dernière transaction.
+        $positions = Position::where('user_id', $user->id)->get()
+            ->keyBy('isin')
+            ->map(fn (Position $position) => [
+                'isin' => $position->isin,
+                'quantity' => $position->quantity,
+                'current_price' => $position->current_price,
+                'current_amount' => round($position->quantity * $position->current_price, 2),
+            ]);
 
         $allocations = $targets->map(function ($target) use ($positions) {
             $position = $positions[$target->isin] ?? [
