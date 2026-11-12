@@ -122,6 +122,18 @@ const columns: TableColumn<Allocation>[] = [
             h('span', {
                 class: row.original.amount_to_add > 0 ? 'text-green-500' : 'text-gray-500'
             }, formatCurrency(row.original.amount_to_add))
+    },
+    {
+        id: 'actions',
+        header: '',
+        cell: ({ row }) =>
+            h(UButton, {
+                icon: 'i-lucide-pencil',
+                color: 'neutral',
+                variant: 'ghost',
+                'aria-label': 'Modifier l\'objectif',
+                onClick: () => openEdit(row.original)
+            })
     }
 ]
 
@@ -175,6 +187,54 @@ const onSubmit = async () => {
     }
 }
 
+const editOpen = ref(false)
+const isUpdating = ref(false)
+
+const editSchema = z.object({
+    target_percent: z
+        .number({ invalid_type_error: 'Entrez un nombre' })
+        .min(0, 'Min: 0%')
+        .max(100, 'Max: 100%')
+})
+
+const editedAllocation = reactive({
+    id: 0,
+    name: '',
+    type: 'ETF' as Allocation['type'],
+    target_percent: 0
+})
+
+const openEdit = (allocation: Allocation) => {
+    Object.assign(editedAllocation, {
+        id: allocation.id,
+        name: allocation.label,
+        type: allocation.type,
+        target_percent: Number(allocation.target_percent)
+    })
+    editOpen.value = true
+}
+
+const onEditSubmit = async () => {
+    isUpdating.value = true
+    try {
+        // L'API exige name + type en plus de l'objectif : on renvoie les valeurs actuelles.
+        const { error } = await useApiFetch(`/api/allocations/${editedAllocation.id}`, {
+            method: 'PUT',
+            body: {
+                name: editedAllocation.name,
+                type: editedAllocation.type,
+                target_percent: editedAllocation.target_percent
+            }
+        })
+        if (error.value) return
+
+        editOpen.value = false
+        await refresh()
+    } finally {
+        isUpdating.value = false
+    }
+}
+
 </script>
 
 <template>
@@ -206,6 +266,20 @@ const onSubmit = async () => {
 
                 <div class="mt-4">
                     <UButton type="submit" block :loading="isSubmitting" class="w-full">Créer</UButton>
+                </div>
+            </UForm>
+        </template>
+    </UModal>
+
+    <UModal v-model:open="editOpen" :title="`Modifier ${editedAllocation.name}`" description="Nouvel objectif de répartition">
+        <template #body>
+            <UForm :schema="editSchema" :state="editedAllocation" @submit="onEditSubmit" class="space-y-4">
+                <UFormField label="Objectif (%)" required name="target_percent">
+                    <UInput v-model.number="editedAllocation.target_percent" type="number" step="0.01" class="w-full" />
+                </UFormField>
+
+                <div class="mt-4">
+                    <UButton type="submit" block :loading="isUpdating" class="w-full">Enregistrer</UButton>
                 </div>
             </UForm>
         </template>

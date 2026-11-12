@@ -1,4 +1,5 @@
 export type Allocation = {
+    id: number
     label: string
     isin: string
     ticker: string

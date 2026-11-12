@@ -35,6 +35,7 @@ class GetAllocationsAction
             ];
 
             return [
+                'id' => $target->id,
                 'label' => $target->name,
                 'isin' => $target->isin,
                 'type' => $target->type,

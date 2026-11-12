@@ -19,6 +19,15 @@ it('returns only allocations of the authenticated user', function () {
     expect($response->json())->toHaveCount(2);
 });
 
+it('exposes the allocation id in the listing so it can be updated', function () {
+    $allocation = Allocation::factory()->create(['user_id' => $this->user->id]);
+
+    $response = $this->getJson('/api/allocations');
+
+    $response->assertOk();
+    $response->assertJsonPath('0.id', $allocation->id);
+});
+
 it('stores a new allocation for the authenticated user', function () {
     $payload = [
         'isin' => 'FR0000000001',
