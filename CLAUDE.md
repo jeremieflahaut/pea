@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal PEA (French stock savings plan) portfolio tracker. Three services wired together via Docker Compose:
 
-- `backend/app` — Laravel 12 REST API (PHP 8.2, Sanctum cookie auth). SQLite in dev/CI, **MySQL in prod** (external `docker-mysql` container on `antibes`). Runs on **official images**: `php:8.2-fpm-alpine` (`pea_php`) behind `nginx:alpine` (`pea_nginx`) — no custom base image. Multi-stage `backend/Dockerfile` with `prod`/`dev` targets; nginx image built from `backend/docker/nginx/`.
+- `backend/app` — Laravel 13 REST API (PHP 8.5, Sanctum cookie auth). SQLite in dev/CI, **MySQL in prod** (external `docker-mysql` container on `antibes`). Runs on **official images**: `php:8.5-fpm-alpine` (`pea_php`) behind `nginx:alpine` (`pea_nginx`) — no custom base image. Multi-stage `backend/Dockerfile` with `prod`/`dev` targets; nginx image built from `backend/docker/nginx/`.
 - `frontend/app` — Nuxt 3 SPA (Vue 3, Tailwind v4, Pinia, `nuxt-auth-sanctum`)
 - `scraper/` — tiny Flask service that scrapes Yahoo Finance for a ticker's current price
 
@@ -90,7 +90,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d   # or: ma
 
 ## CI/CD
 
-- `.github/workflows/tests-laravel.yml` runs Pest on PRs to `main` (PHP 8.2, SQLite, coverage via xdebug).
+- `.github/workflows/tests-laravel.yml` runs Pest on PRs to `main` (PHP 8.5, SQLite, coverage via xdebug).
 - `.github/workflows/deploy-on-main.yml` uses `dorny/paths-filter` to detect which of `frontend/`, `backend/`, `scraper/` changed, builds only the changed images, pushes to `ghcr.io/jeremieflahaut/pea/*`. The VPS (`/home/debian/projects/pea`) is **not a git checkout**: the workflow `scp`s `docker-compose.yml` + `docker-compose.prod.yml` to it (so it needs no git auth — images come from GHCR), then SSHes in to `docker compose -f docker-compose.yml -f docker-compose.prod.yml pull` + `up -d --remove-orphans`. The SSH steps use `script_stop: true` so a failing command fails the action (don't drop it — without it errors are swallowed and the deploy lies green). A `backend/` change builds **two** images — `php` (`--target prod`) and `nginx` — and recreates `php`, `nginx`, `scheduler`, then runs `artisan migrate --force` + `package:discover` + `config:cache`. Migrations must be safe to apply unattended.
 - Prod env lives **only on the VPS** at `env/laravel.env` (gitignored): must set `LOG_CHANNEL=stderr` and `DB_CONNECTION=mysql` (host `mysql_mysql`). `config:cache` bakes it on each deploy.
 - Logs go to **stdout/stderr** (set `LOG_CHANNEL=stderr` in the prod env); read them with `docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f php nginx scheduler`. No file logging / logrotate.
