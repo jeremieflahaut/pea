@@ -20,8 +20,8 @@ const types = ref([
 const transactionSchema = z.object({
     isin: z.string().length(12, 'ISIN invalide'),
     type: z.enum(['buy', 'sell']),
-    quantity: z.number({ invalid_type_error: 'Nombre requis' }).min(0.0001),
-    price: z.number({ invalid_type_error: 'Nombre requis' }).min(0),
+    quantity: z.number({ error: 'Nombre requis' }).min(0.0001),
+    price: z.number({ error: 'Nombre requis' }).min(0),
     date: z.string().min(1, 'Date requise'),
 })
 

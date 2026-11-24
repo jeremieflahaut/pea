@@ -173,7 +173,7 @@ const allocationSchema = z.object({
     isin: z.string().length(12, 'ISIN invalide'),
     type: z.enum(['ETF', 'Action']),
     target_percent: z
-        .number({ invalid_type_error: 'Entrez un nombre' })
+        .number({ error: 'Entrez un nombre' })
         .min(0, 'Min: 0%')
         .max(100, 'Max: 100%')
 })
@@ -217,7 +217,7 @@ const isUpdating = ref(false)
 
 const editSchema = z.object({
     target_percent: z
-        .number({ invalid_type_error: 'Entrez un nombre' })
+        .number({ error: 'Entrez un nombre' })
         .min(0, 'Min: 0%')
         .max(100, 'Max: 100%')
 })
