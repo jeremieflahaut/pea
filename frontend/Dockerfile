@@ -1,4 +1,4 @@
-FROM node:20.19-alpine3.21 as builder
+FROM node:24.22.3-alpine3.24 AS builder
 
 WORKDIR /app
 COPY app/ .
@@ -10,7 +10,7 @@ ENV NUXT_PUBLIC_SANCTUM_BASE_URL=$NUXT_PUBLIC_SANCTUM_BASE_URL
 RUN npm install && npm run build
 
 # Étape pour servir l'app (Nitro standalone ou node server)
-FROM node:20.19-alpine3.21
+FROM node:24.22.3-alpine3.24
 
 WORKDIR /app
 COPY --from=builder /app/.output ./.output

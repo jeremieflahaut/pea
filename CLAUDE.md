@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Personal PEA (French stock savings plan) portfolio tracker. Three services wired together via Docker Compose:
 
 - `backend/app` — Laravel 13 REST API (PHP 8.5, Sanctum cookie auth). SQLite in dev/CI, **MySQL in prod** (external `docker-mysql` container on `antibes`). Runs on **official images**: `php:8.5-fpm-alpine` (`pea_php`) behind `nginx:alpine` (`pea_nginx`) — no custom base image. Multi-stage `backend/Dockerfile` with `prod`/`dev` targets; nginx image built from `backend/docker/nginx/`.
-- `frontend/app` — Nuxt 3 SPA (Vue 3, Tailwind v4, Pinia, `nuxt-auth-sanctum`)
+- `frontend/app` — Nuxt 4 SPA (Vue 3, Tailwind v4, Pinia, `nuxt-auth-sanctum` v3, Node 24)
 - `scraper/` — tiny Flask service that scrapes Yahoo Finance for a ticker's current price
 
 Production runs on a VPS behind Traefik at `api-pea.dev-fullstack.net` (Laravel) and `pea.dev-fullstack.net` (Nuxt). The compose `antibes` network is external and shared with other projects.
