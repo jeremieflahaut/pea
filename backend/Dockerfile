@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # Binaire composer (le phar est indépendant du PHP qui l'exécute ; on l'exécute sous
-# PHP 8.2 ci-dessous pour respecter les platform reqs du composer.lock).
+# PHP 8.5 ci-dessous pour respecter les platform reqs du composer.lock).
 FROM composer:2 AS composer
 
 # ============ base runtime : php-fpm officiel + extensions ============
-FROM php:8.2.36-fpm-alpine AS base
+FROM php:8.5.13-fpm-alpine AS base
 # install-php-extensions : helper posé sur la base OFFICIELLE, gère les deps système
 # des extensions (icu, libzip…) sans bricoler les -dev alpine à la main.
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
@@ -13,7 +13,7 @@ RUN install-php-extensions pdo_mysql pdo_sqlite bcmath intl zip opcache pcntl
 COPY docker/php/upload-progress.ini /usr/local/etc/php/conf.d/zz-upload-progress.ini
 WORKDIR /var/www/html
 
-# ============ deps composer (prod, sans dev) — sous PHP 8.2 + extensions ============
+# ============ deps composer (prod, sans dev) — sous PHP 8.5 + extensions ============
 FROM base AS vendor
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 COPY app/ .
